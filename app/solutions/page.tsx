@@ -157,7 +157,6 @@ export default function SolutionsPage() {
               }}
             >
               <CardContent className="p-6 bg-[var(--card)]/70 backdrop-blur-sm rounded-[var(--radius)]">
-                <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
                 <p className="text-sm text-[var(--foreground)]/90 leading-relaxed">
                   {item.desc}
                 </p>
