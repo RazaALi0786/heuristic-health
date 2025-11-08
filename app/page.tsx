@@ -168,7 +168,7 @@ export default function HomePage() {
             className="text-lg mb-10 leading-relaxed"
             style={{ color: "var(--muted-foreground)" }}
           >
-            At <strong>MedConnect Careers</strong>, we’re redefining healthcare
+            At <strong>Heuristic Health</strong>, we’re redefining healthcare
             recruitment. Our mission is to bridge skilled healthcare
             professionals with the facilities that need them most — ensuring
             better care, greater satisfaction, and stronger teams across the
