@@ -21,12 +21,60 @@ const fadeIn = {
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // Fetch jobs from localStorage (posted from Admin Panel)
-    const storedJobs = JSON.parse(localStorage.getItem("postedJobs")) || [];
-    setJobs(storedJobs);
-    setLoading(false);
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        // ✅ Absolute URL is safer for Next.js client components
+        const baseUrl =
+          typeof window !== "undefined"
+            ? window.location.origin
+            : process.env.NEXT_PUBLIC_BASE_URL || "";
+
+        const res = await fetch(`${baseUrl}/api/jobs`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+          },
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Server response:", errText);
+          throw new Error(`Failed to fetch jobs (${res.status})`);
+        }
+
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setJobs(data);
+          localStorage.setItem("postedJobs", JSON.stringify(data));
+        } else {
+          console.warn("Unexpected data format:", data);
+          const storedJobs = JSON.parse(
+            localStorage.getItem("postedJobs") || "[]"
+          );
+          setJobs(storedJobs);
+        }
+      } catch (err) {
+        console.error("Error fetching jobs:", err);
+        setError("Unable to fetch jobs. Showing locally saved data (if any).");
+
+        const storedJobs = JSON.parse(
+          localStorage.getItem("postedJobs") || "[]"
+        );
+        setJobs(storedJobs);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
   }, []);
 
   return (
@@ -72,14 +120,18 @@ export default function JobsPage() {
           Open Positions
         </h2>
         <h5 className="mb-6 text-[var(--muted-foreground)] text-md">
-          {loading ? "Loading..." : `${jobs.length} opportunities available.`}
+          {loading
+            ? "Loading..."
+            : error
+            ? error
+            : `${jobs.length} opportunities available.`}
         </h5>
 
         {jobs.length > 0 ? (
           <div className="grid gap-10 md:grid-cols-1">
             {jobs.map((job) => (
               <motion.div
-                key={job.id}
+                key={job._id || job.id}
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -87,11 +139,9 @@ export default function JobsPage() {
                 className="transition-all duration-300"
               >
                 <Card className="border border-[var(--border)] bg-white/90 backdrop-blur-md shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-medium)] transition-all duration-300 rounded-2xl overflow-hidden">
-                  {/* Header Strip */}
                   <div className="bg-[var(--gradient-blue-teal)] h-2 w-full"></div>
 
                   <CardContent className="p-6">
-                    {/* Top Section: Job Title and Company */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                       <div>
                         <h3 className="text-2xl font-semibold text-[var(--foreground)]">
@@ -103,20 +153,17 @@ export default function JobsPage() {
                         </p>
                       </div>
 
-                      <Button
+                      <a
+                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${job?.email}&su=General%20Application`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         variant="default"
-                        className="mt-4 sm:mt-0 bg-[var(--primary)] text-white hover:bg-[hsl(210,80%,40%)] rounded-full px-5 py-2"
+                        className="hidden sm:flex mt-4 sm:mt-0 bg-[var(--primary)] text-white hover:bg-[hsl(210,80%,40%)] rounded-full px-5 py-2 cursor-pointer transition-all duration-300 flex items-center gap-2 justify-center"
                       >
                         Apply Now
-                      </Button>
+                      </a>
                     </div>
 
-                    {/* Description */}
-                    <p className="mt-6 text-[var(--foreground)] leading-relaxed text-base">
-                      {job.description}
-                    </p>
-
-                    {/* Tags Row */}
                     <div className="flex flex-wrap gap-3 mt-6">
                       {job.location && (
                         <span className="flex items-center gap-1 bg-[var(--accent-teal)]/10 text-[var(--accent-teal)] px-3 py-1 rounded-full text-sm font-medium">
@@ -141,7 +188,10 @@ export default function JobsPage() {
                       )}
                     </div>
 
-                    {/* Footer Info */}
+                    <p className="mt-6 text-[var(--foreground)] leading-relaxed text-base">
+                      {job.description}
+                    </p>
+
                     <div className="mt-8 border-t border-[var(--border)] pt-4 flex flex-wrap justify-between text-sm text-[var(--muted-foreground)]">
                       <p>
                         <span className="font-semibold text-[var(--foreground)]">
@@ -156,27 +206,33 @@ export default function JobsPage() {
                         {job.email || "N/A"}
                       </p>
                     </div>
+
+                     <a
+                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${job?.email}&su=General%20Application`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant="default"
+                        className="flex sm:hidden mt-4 sm:mt-0 bg-[var(--primary)] text-white hover:bg-[hsl(210,80%,40%)] rounded-full px-5 py-2 cursor-pointer transition-all duration-300 flex items-center gap-2"
+                      >
+                        Apply Now
+                      </a>
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center mt-20"
-          >
-            <p className="text-[var(--muted-foreground)] mb-6 text-lg">
-              No job postings available yet.
-            </p>
-            <Button
-              onClick={() => (window.location.href = "/admin")}
-              className="bg-[var(--primary)] text-white hover:bg-[hsl(210,80%,40%)] px-6 py-3"
+          !loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center mt-20"
             >
-              Go to Admin Panel
-            </Button>
-          </motion.div>
+              <p className="text-[var(--muted-foreground)] mb-6 text-lg">
+                No job postings available yet.
+              </p>
+            </motion.div>
+          )
         )}
       </section>
 
