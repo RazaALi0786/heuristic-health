@@ -60,7 +60,7 @@ export default function SolutionsPage() {
 
   return (
     <main className="flex flex-col items-center w-full bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
-      {/* ✅ Hero Section */}
+      {/* Hero Section */}
       <section className="relative w-full h-[400px] md:h-[500px] overflow-hidden">
         <div className="absolute inset-0 z-0">
           <motion.div
@@ -105,7 +105,7 @@ export default function SolutionsPage() {
         </motion.div>
       </section>
 
-      {/* ✅ Solutions Accordion Grid */}
+      {/* Solutions Accordion Grid */}
       <motion.section
         className="w-full max-w-6xl px-6 py-16"
         variants={staggerContainer}
@@ -159,7 +159,7 @@ export default function SolutionsPage() {
         </motion.div>
       </motion.section>
 
-      {/* ✅ Why Choose Us Section */}
+      {/* Why Choose Us Section */}
       <motion.section
         className="w-full max-w-6xl px-6 py-16 bg-[var(--secondary)] rounded-lg text-center shadow-[var(--shadow-soft)]"
         initial="hidden"
@@ -229,7 +229,7 @@ export default function SolutionsPage() {
         </motion.div>
       </motion.section>
 
-      {/* ✅ Call to Action */}
+      {/* Call to Action */}
       <motion.section
         className="w-full max-w-4xl px-6 py-16 text-center"
         variants={fadeUp}

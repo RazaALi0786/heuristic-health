@@ -35,6 +35,9 @@ export default function Navbar() {
             <Link href="/solutions" className={navLink}>
               Solutions
             </Link>
+            <Link href="/jobs" className={navLink}>
+              Jobs
+            </Link>
             <Link href="/contact" className={navLink}>
               Contact
             </Link>
