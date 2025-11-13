@@ -23,3 +23,19 @@ export async function POST(req: Request) {
     });
   }
 }
+
+export async function GET() {
+  try {
+    await connectToDatabase();
+    const messages = await Contact.find().sort({ createdAt: -1 });
+
+    return new Response(JSON.stringify(messages), {
+      status: 200,
+    });
+  } catch (err) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500,
+    });
+  }
+}

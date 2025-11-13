@@ -20,6 +20,7 @@ export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [jobs, setJobs] = useState([]); // ✅ new jobs array
+  const [messages, setMessages] = useState([]);
   const [jobData, setJobData] = useState({
     title: "",
     company: "",
@@ -70,18 +71,48 @@ export default function AdminPanel() {
     setIsAuthenticated(false);
   };
 
-  const [messages] = useState([
-    {
-      name: "John Doe",
-      email: "john@example.com",
-      message: "Interested in cardiology position.",
-    },
-    {
-      name: "Aarav Sharma",
-      email: "aarav@medmail.com",
-      message: "Inquiry about job posting update.",
-    },
-  ]);
+  useEffect(() => {
+    async function fetchMessages() {
+      try {
+        const res = await fetch("/api/contact", { method: "GET" });
+        const data = await res.json();
+        setMessages(data);
+      } catch (err) {
+        console.error("Failed to fetch messages", err);
+      }
+    }
+
+    fetchMessages();
+  }, []);
+
+  const handleDeleteMessage = async (id: string) => {
+    const confirmDelete = confirm("Delete this message?");
+    if (!confirmDelete) return;
+
+    try {
+      await fetch(`/api/contact/${id}`, {
+        method: "DELETE",
+      });
+
+      // Update UI instantly
+      setMessages((prev) => prev.filter((m: any) => m._id !== id));
+    } catch (err) {
+      console.error("Error deleting message", err);
+    }
+  };
+
+  // const [messages] = useState([
+  //   {
+  //     name: "John Doe",
+  //     email: "john@example.com",
+  //     message: "Interested in cardiology position.",
+  //   },
+  //   {
+  //     name: "Aarav Sharma",
+  //     email: "aarav@medmail.com",
+  //     message: "Inquiry about job posting update.",
+  //   },
+  // ]);
 
   const handleChange = (e) => {
     setJobData({ ...jobData, [e.target.name]: e.target.value });
@@ -230,11 +261,7 @@ export default function AdminPanel() {
             <div></div>
             <Button
               onClick={handleLogout}
-              className={`px-6 py-2 mb-4 rounded-lg cursor-pointer font-medium transition-all duration-300 ${
-                activeTab === "jobs"
-                  ? "bg-[var(--destructive)] text-white"
-                  : "border border-[var(--border)]"
-              }`}
+              className={`px-6 py-2 mb-4 rounded-lg cursor-pointer font-medium transition-all duration-300 bg-[var(--destructive)] text-white`}
             >
               Logout
             </Button>
@@ -492,17 +519,27 @@ export default function AdminPanel() {
 
                     <CardContent className="p-6 space-y-4">
                       {messages.length > 0 ? (
-                        messages.map((msg, idx) => (
+                        messages.map((msg: any, idx: number) => (
                           <div
-                            key={idx}
-                            className="border border-[var(--border)] rounded-xl p-4 shadow-[var(--shadow-soft)]"
+                            key={msg._id}
+                            className="border border-[var(--border)] rounded-xl p-4 shadow-[var(--shadow-soft)] relative"
                           >
+                           <div className="flex justify-between">
                             <p className="font-semibold text-[var(--foreground)]">
                               {msg.name}{" "}
                               <span className="text-sm text-[var(--muted-foreground)]">
                                 ({msg.email})
                               </span>
                             </p>
+                             <Button
+                              onClick={() => handleDeleteMessage(msg._id)}
+                              variant="destructive"
+                              className="hover:bg-[var(--border)] text-[var(--sidebar-foreground)] cursor-pointer border-2 border-[var(--border)]"
+                            >
+                              Clear
+                            </Button>
+                           </div>
+
                             <p className="mt-2 text-[var(--foreground)] text-sm">
                               {msg.message}
                             </p>
